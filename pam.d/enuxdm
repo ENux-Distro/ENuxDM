@@ -1,0 +1,13 @@
+# ENuxDM — self-contained stack (pam_unix only).
+# Avoid @include common-auth/common-account here: those stacks often add pam_faillock,
+# pam_sss, pam_kwallet, etc., which frequently fail or misbehave for display managers
+# after boot while console login still works.
+#
+# For LDAP/SSO, extend this file or maintain a local override in /etc/pam.d/.
+
+auth     required pam_unix.so
+account  required pam_unix.so
+
+session  required pam_unix.so
+# Optional: required on hardened servers; optional avoids hard failures if audit/loginuid misconfigured.
+session  optional pam_loginuid.so
