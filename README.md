@@ -2,7 +2,7 @@
 
 Display manager for ENux Linux with PAM authentication, a minimal Xorg greeter (GTK 4), and XFCE4 session launch.
 
-## Dependencies (Debian / Ubuntu)
+## Dependencies (Debian / ENux / Ubuntu)
 
 Build:
 
@@ -76,7 +76,7 @@ After **Log Out** / **Restart** / **Shut Down**, the session ends and `xinit` lo
 
 Those actions go through **polkit** and **systemd-logind**. Install a polkit agent in the user session, for example:
 
-- Debian / Ubuntu: `policykit-1-gnome` or **`xfce-polkit`** / **`xfce4-polkit`**
+- Debian / ENux / Ubuntu: `policykit-1-gnome` or **`xfce-polkit`** / **`xfce4-polkit`**
 - Ensure the agent autostarts with XFCE (many metapackages add it automatically).
 
 `systemd-logind` and `dbus-user-session` should be active. ENuxDM sets **`XDG_VTNR`**, **`XDG_SEAT`**, and **`XDG_SESSION_TYPE=x11`** so the desktop session is closer to a normal VT login for policy checks.
