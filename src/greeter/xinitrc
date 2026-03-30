@@ -1,0 +1,38 @@
+#!/bin/sh
+# ENuxDM client script — run by xinit after Xorg starts.
+
+export DISPLAY="${DISPLAY:-:0}"
+umask 077
+LOG=/var/log/enuxdm-session.log
+touch "$LOG" 2>/dev/null || true
+exec >>"$LOG" 2>&1
+
+PREFIX="${ENUXDM_PREFIX:-/usr}"
+export ENUXDM_AUTH_SOCKET="${ENUXDM_AUTH_SOCKET:-/run/enuxdm/auth.sock}"
+export ENUXDM_SESSION_FILE="${ENUXDM_SESSION_FILE:-/run/enuxdm/session.cred}"
+export ENUXDM_GREETER_DIR="${PREFIX}/share/enuxdm/greeter"
+export GI_TYPELIB_PATH="${GI_TYPELIB_PATH:-}"
+export GDK_BACKEND=x11
+# GTK4 GSK: GL/Vulkan often yields a blank root on minimal Xorg; Cairo works everywhere.
+export GSK_RENDERER=cairo
+export NO_AT_BRIDGE=1
+
+# Solid root while the greeter starts (avoids raw X gray / perceived "black" flash).
+command -v xsetroot >/dev/null 2>&1 && xsetroot -solid "#0b1220" || true
+
+LAUNCH="${PREFIX}/lib/enuxdm/enuxdm-launch"
+
+while true; do
+	env PYTHONPATH="${ENUXDM_GREETER_DIR}${PYTHONPATH:+:$PYTHONPATH}" \
+		python3 "${ENUXDM_GREETER_DIR}/greeter.py"
+	rc=$?
+	if [ "$rc" -ne 0 ]; then
+		sleep 1
+	fi
+	if [ "$rc" -eq 0 ] && [ -f "$ENUXDM_SESSION_FILE" ]; then
+		"$LAUNCH" || true
+	fi
+	rm -f "$ENUXDM_SESSION_FILE"
+	# After XFCE exits, restore a known-good root before the next greeter (WM sometimes leaves X confused).
+	command -v xsetroot >/dev/null 2>&1 && xsetroot -solid "#0b1220" || true
+done
